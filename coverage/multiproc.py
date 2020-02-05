@@ -25,6 +25,7 @@ else:
 
 original_bootstrap = OriginalProcess._bootstrap
 
+
 class ProcessWithCoverage(OriginalProcess):         # pylint: disable=abstract-method
     """A replacement for multiprocess.Process that starts coverage."""
 
@@ -53,14 +54,17 @@ class ProcessWithCoverage(OriginalProcess):         # pylint: disable=abstract-m
             if debug.should("multiproc"):
                 debug.write("Saved multiprocessing data")
 
+
 class Stowaway(object):
     """An object to pickle, so when it is unpickled, it can apply the monkey-patch."""
     def __init__(self, rcfile):
         self.rcfile = rcfile
 
+    # _________________________________________________________________________
     def __getstate__(self):
         return {'rcfile': self.rcfile}
 
+    # _________________________________________________________________________
     def __setstate__(self, state):
         patch_multiprocessing(state['rcfile'])
 
@@ -84,9 +88,6 @@ def patch_multiprocessing(rcfile):
     else:
         multiprocessing.Process = ProcessWithCoverage
 
-    # Set the value in ProcessWithCoverage that will be pickled into the child
-    # process.
-    os.environ["COVERAGE_RCFILE"] = os.path.abspath(rcfile)
 
     # When spawning processes rather than forking them, we have no state in the
     # new process.  We sneak in there with a Stowaway: we stuff one of our own
